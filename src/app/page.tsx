@@ -70,15 +70,15 @@ export default function Home() {
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
-    
+
     setIsSubmitting(true);
     setSubmitError("");
-    
+
     try {
       const { error } = await supabase
         .from('waitlist')
         .insert([{ email, idea }]);
-      
+
       if (error) {
         if (error.code === '23505') {
           setSubmitError("You're already on the waitlist!");
@@ -87,7 +87,7 @@ export default function Home() {
         }
         return;
       }
-      
+
       setIsSubmitted(true);
     } catch {
       setSubmitError("Something went wrong. Please try again.");
