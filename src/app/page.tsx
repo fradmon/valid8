@@ -166,6 +166,7 @@ export default function Home() {
             transition={{ delay: 0.4, type: "spring" }}
           >
             <button
+              id="random-idea-btn"
               onClick={handleRandomIdea}
               disabled={isShuffling}
               className="group relative inline-flex items-center gap-3 px-7 py-3.5 rounded-full text-sm font-semibold transition-all duration-300 overflow-hidden
