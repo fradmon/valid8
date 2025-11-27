@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Sparkles,
@@ -67,10 +67,11 @@ export default function Home() {
   };
 
   // Track events to Supabase
-  const trackEvent = async (eventType: string) => {
+  const trackEvent = useCallback(async (eventType: string, elementInfo?: string) => {
     try {
       await supabase.from('analytics').insert([{
         event_type: eventType,
+        element_info: elementInfo || null,
         device_type: getDeviceType(),
         browser: getBrowser(),
         screen_width: typeof window !== 'undefined' ? window.innerWidth : null,
@@ -80,7 +81,30 @@ export default function Home() {
     } catch {
       // Silently fail - don't interrupt user experience for analytics
     }
-  };
+  }, []);
+
+  // Global click tracker
+  useEffect(() => {
+    const handleGlobalClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target) return;
+
+      // Build element description
+      const tag = target.tagName.toLowerCase();
+      const id = target.id ? `#${target.id}` : '';
+      const classes = target.className && typeof target.className === 'string' 
+        ? `.${target.className.split(' ').slice(0, 2).join('.')}` 
+        : '';
+      const text = target.textContent?.slice(0, 30).trim() || '';
+      
+      const elementInfo = `${tag}${id}${classes}${text ? ` "${text}"` : ''}`;
+      
+      trackEvent('click', elementInfo);
+    };
+
+    document.addEventListener('click', handleGlobalClick);
+    return () => document.removeEventListener('click', handleGlobalClick);
+  }, [trackEvent]);
 
   const handleGenerate = () => {
     if (!idea) return;
@@ -90,7 +114,7 @@ export default function Home() {
   const handleRandomIdea = () => {
     setIsShuffling(true);
     trackEvent('random_idea_click'); // Track the click!
-    
+
     // Shuffle through a few ideas for visual effect
     let count = 0;
     const interval = setInterval(() => {
