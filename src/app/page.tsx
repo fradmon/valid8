@@ -12,8 +12,10 @@ import {
   Zap,
   Shuffle,
   Mail,
-  Check
+  Check,
+  Loader2
 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 const randomIdeas = [
   "An app that tracks coffee consumption and suggests optimal caffeine timing",
@@ -40,6 +42,8 @@ export default function Home() {
   const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isShuffling, setIsShuffling] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const handleGenerate = () => {
     if (!idea) return;
@@ -63,10 +67,33 @@ export default function Home() {
     }, 80);
   };
 
-  const handleEmailSubmit = (e: React.FormEvent) => {
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
-    setIsSubmitted(true);
+    
+    setIsSubmitting(true);
+    setSubmitError("");
+    
+    try {
+      const { error } = await supabase
+        .from('waitlist')
+        .insert([{ email, idea }]);
+      
+      if (error) {
+        if (error.code === '23505') {
+          setSubmitError("You're already on the waitlist!");
+        } else {
+          setSubmitError("Something went wrong. Please try again.");
+        }
+        return;
+      }
+      
+      setIsSubmitted(true);
+    } catch {
+      setSubmitError("Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -295,14 +322,28 @@ export default function Home() {
                             placeholder="Enter your email"
                             className="w-full bg-white/5 border border-white/10 focus:border-purple-500/50 rounded-xl pl-12 pr-4 py-4 text-white placeholder:text-zinc-600 outline-none transition-colors"
                             required
+                            disabled={isSubmitting}
                           />
                         </div>
+                        {submitError && (
+                          <p className="text-red-400 text-sm">{submitError}</p>
+                        )}
                         <button
                           type="submit"
-                          className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-4 rounded-xl transition-all shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 flex items-center justify-center gap-2"
+                          disabled={isSubmitting}
+                          className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:opacity-70 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-xl transition-all shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 flex items-center justify-center gap-2"
                         >
-                          <span>Join the Waitlist</span>
-                          <ArrowRight className="w-4 h-4" />
+                          {isSubmitting ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              <span>Joining...</span>
+                            </>
+                          ) : (
+                            <>
+                              <span>Join the Waitlist</span>
+                              <ArrowRight className="w-4 h-4" />
+                            </>
+                          )}
                         </button>
                       </form>
 
