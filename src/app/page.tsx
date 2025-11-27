@@ -45,6 +45,43 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
+  // Helper to detect device type from user agent
+  const getDeviceType = () => {
+    if (typeof window === 'undefined') return 'unknown';
+    const ua = navigator.userAgent;
+    if (/tablet|ipad|playbook|silk/i.test(ua)) return 'tablet';
+    if (/mobile|iphone|ipod|android|blackberry|opera mini|iemobile/i.test(ua)) return 'mobile';
+    return 'desktop';
+  };
+
+  // Helper to detect browser
+  const getBrowser = () => {
+    if (typeof window === 'undefined') return 'unknown';
+    const ua = navigator.userAgent;
+    if (ua.includes('Firefox')) return 'Firefox';
+    if (ua.includes('Chrome') && !ua.includes('Edg')) return 'Chrome';
+    if (ua.includes('Safari') && !ua.includes('Chrome')) return 'Safari';
+    if (ua.includes('Edg')) return 'Edge';
+    if (ua.includes('Opera') || ua.includes('OPR')) return 'Opera';
+    return 'Other';
+  };
+
+  // Track events to Supabase
+  const trackEvent = async (eventType: string) => {
+    try {
+      await supabase.from('analytics').insert([{
+        event_type: eventType,
+        device_type: getDeviceType(),
+        browser: getBrowser(),
+        screen_width: typeof window !== 'undefined' ? window.innerWidth : null,
+        screen_height: typeof window !== 'undefined' ? window.innerHeight : null,
+        referrer: typeof document !== 'undefined' ? document.referrer || null : null,
+      }]);
+    } catch {
+      // Silently fail - don't interrupt user experience for analytics
+    }
+  };
+
   const handleGenerate = () => {
     if (!idea) return;
     setShowModal(true);
@@ -52,6 +89,8 @@ export default function Home() {
 
   const handleRandomIdea = () => {
     setIsShuffling(true);
+    trackEvent('random_idea_click'); // Track the click!
+    
     // Shuffle through a few ideas for visual effect
     let count = 0;
     const interval = setInterval(() => {
@@ -88,6 +127,7 @@ export default function Home() {
         return;
       }
 
+      trackEvent('waitlist_signup'); // Track successful signup!
       setIsSubmitted(true);
     } catch {
       setSubmitError("Something went wrong. Please try again.");
