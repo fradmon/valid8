@@ -9,16 +9,64 @@ import {
   Globe,
   ArrowRight,
   X,
-  Zap
+  Zap,
+  Shuffle,
+  Mail,
+  Check
 } from "lucide-react";
+
+const randomIdeas = [
+  "An app that tracks coffee consumption and suggests optimal caffeine timing",
+  "Marketplace for local artisan sourdough bread delivery",
+  "AI-powered fitness coach that adapts to your daily mood",
+  "Subscription box for curated vintage vinyl records",
+  "Smart grocery list that predicts what you'll need next week",
+  "Neighborhood tool-sharing platform with instant pickup",
+  "On-demand personal chef matching for home dinners",
+  "Gamified habit tracker that pays you real rewards",
+  "AI that turns voice notes into structured documents",
+  "Sustainable fashion rental for special occasions",
+  "Pet wellness tracker with 24/7 vet telemedicine",
+  "Micro-learning language app with AI conversation partner",
+  "Remote team bonding games for distributed companies",
+  "Carbon footprint tracker linked to your bank account",
+  "Personalized meditation app that reads your biometrics",
+  "Virtual interior designer using your phone camera",
+];
 
 export default function Home() {
   const [idea, setIdea] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [email, setEmail] = useState("");
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isShuffling, setIsShuffling] = useState(false);
 
   const handleGenerate = () => {
     if (!idea) return;
     setShowModal(true);
+  };
+
+  const handleRandomIdea = () => {
+    setIsShuffling(true);
+    // Shuffle through a few ideas for visual effect
+    let count = 0;
+    const interval = setInterval(() => {
+      const randomIndex = Math.floor(Math.random() * randomIdeas.length);
+      setIdea(randomIdeas[randomIndex]);
+      count++;
+      if (count >= 6) {
+        clearInterval(interval);
+        setIsShuffling(false);
+        // Show modal after shuffle completes
+        setTimeout(() => setShowModal(true), 300);
+      }
+    }, 80);
+  };
+
+  const handleEmailSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    setIsSubmitted(true);
   };
 
   return (
@@ -110,6 +158,36 @@ export default function Home() {
             </div>
           </div>
 
+          {/* Try a Random Idea Button */}
+          <motion.div
+            className="mt-6"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, type: "spring" }}
+          >
+            <button
+              onClick={handleRandomIdea}
+              disabled={isShuffling}
+              className="group relative inline-flex items-center gap-3 px-7 py-3.5 rounded-full text-sm font-semibold transition-all duration-300 overflow-hidden
+                bg-gradient-to-r from-purple-600 via-pink-500 to-orange-500
+                hover:from-purple-500 hover:via-pink-400 hover:to-orange-400
+                text-white shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 hover:shadow-xl
+                hover:scale-[1.03] active:scale-[0.98]
+                disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
+            >
+              {/* Glossy shine effect */}
+              <span className="absolute inset-0 bg-gradient-to-b from-white/30 via-white/5 to-transparent opacity-100" />
+              {/* Animated shimmer */}
+              <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12" />
+              {/* Top highlight */}
+              <span className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent" />
+
+              <Sparkles className={`w-4 h-4 relative z-10 transition-all duration-300 ${isShuffling ? 'animate-pulse' : 'group-hover:rotate-12 group-hover:scale-110'}`} />
+              <span className="relative z-10">{isShuffling ? 'Finding your idea...' : 'Try a Random Idea'}</span>
+              <ArrowRight className={`w-4 h-4 relative z-10 transition-all duration-300 ${isShuffling ? 'opacity-0' : 'group-hover:translate-x-1'}`} />
+            </button>
+          </motion.div>
+
           {/* Feature pills */}
           <div className="mt-6 md:mt-8 flex flex-wrap justify-center gap-2 md:gap-3 text-xs md:text-sm text-zinc-600">
             <span className="flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-full">
@@ -170,29 +248,68 @@ export default function Home() {
                 <div className="text-center">
                   {/* Icon */}
                   <div className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-white/10 flex items-center justify-center">
-                    <Zap className="w-8 h-8 md:w-10 md:h-10 text-purple-400" />
+                    {isSubmitted ? (
+                      <Check className="w-8 h-8 md:w-10 md:h-10 text-emerald-400" />
+                    ) : (
+                      <Zap className="w-8 h-8 md:w-10 md:h-10 text-purple-400" />
+                    )}
                   </div>
 
-                  <h2 className="text-2xl md:text-3xl font-bold mb-3 tracking-tight">
-                    We're in Private Beta
-                  </h2>
-                  <p className="text-zinc-400 text-sm md:text-base mb-6 max-w-sm mx-auto">
-                    Valid8 is currently available to a limited number of early adopters. Join the waitlist to get early access.
-                  </p>
+                  {isSubmitted ? (
+                    <>
+                      <h2 className="text-2xl md:text-3xl font-bold mb-3 tracking-tight">
+                        You're on the list!
+                      </h2>
+                      <p className="text-zinc-400 text-sm md:text-base mb-6 max-w-sm mx-auto">
+                        Thanks for joining. We'll reach out soon with your exclusive early access.
+                      </p>
+                      <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                        <p className="text-xs text-zinc-500 mb-1">Your idea</p>
+                        <p className="text-sm text-zinc-300">{idea}</p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <h2 className="text-2xl md:text-3xl font-bold mb-3 tracking-tight">
+                        We're in Private Beta
+                      </h2>
+                      <p className="text-zinc-400 text-sm md:text-base mb-2 max-w-sm mx-auto">
+                        Valid8 is currently available to a limited number of early adopters.
+                      </p>
 
-                  {/* CTA Button */}
-                  <a
-                    href="https://docs.google.com/forms/d/e/1FAIpQLScTFSPF5aTDuokgFeSQMsI4CKHvvb-X-EKO0DT31UviEYSDtg/viewform?usp=dialog"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-4 rounded-xl transition-all shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30"
-                  >
-                    Join the Waitlist
-                  </a>
+                      {/* Show the idea */}
+                      <div className="bg-white/5 border border-white/10 rounded-xl p-3 mb-6">
+                        <p className="text-xs text-zinc-500 mb-1">Your idea</p>
+                        <p className="text-sm text-zinc-300">{idea}</p>
+                      </div>
 
-                  <p className="text-xs text-zinc-600 mt-4">
-                    We'll notify you when your spot is ready.
-                  </p>
+                      {/* Email Input Form */}
+                      <form onSubmit={handleEmailSubmit} className="space-y-3">
+                        <div className="relative">
+                          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+                          <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="Enter your email"
+                            className="w-full bg-white/5 border border-white/10 focus:border-purple-500/50 rounded-xl pl-12 pr-4 py-4 text-white placeholder:text-zinc-600 outline-none transition-colors"
+                            required
+                          />
+                        </div>
+                        <button
+                          type="submit"
+                          className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-4 rounded-xl transition-all shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 flex items-center justify-center gap-2"
+                        >
+                          <span>Join the Waitlist</span>
+                          <ArrowRight className="w-4 h-4" />
+                        </button>
+                      </form>
+
+                      <p className="text-xs text-zinc-600 mt-4">
+                        We'll notify you when your spot is ready.
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
             </motion.div>
