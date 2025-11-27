@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Sparkles,
@@ -45,6 +45,7 @@ export default function Home() {
   const [isShuffling, setIsShuffling] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const hasTrackedScroll = useRef(false);
 
   // Helper to detect device type from user agent
   const getDeviceType = () => {
@@ -105,6 +106,20 @@ export default function Home() {
 
     document.addEventListener('click', handleGlobalClick);
     return () => document.removeEventListener('click', handleGlobalClick);
+  }, [trackEvent]);
+
+  // Scroll tracker - only fires once per page visit
+  useEffect(() => {
+    const handleScroll = () => {
+      if (hasTrackedScroll.current) return; // Already tracked this visit
+      
+      hasTrackedScroll.current = true;
+      const scrollPercent = Math.round((window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100);
+      trackEvent('scroll', `scrolled to ${scrollPercent}%`);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, [trackEvent]);
 
   const handleGenerate = () => {
