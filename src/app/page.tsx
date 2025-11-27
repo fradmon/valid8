@@ -8,6 +8,7 @@ import {
   Instagram,
   Globe,
   ArrowRight,
+  ArrowUp,
   X,
   Zap,
   Shuffle,
@@ -92,13 +93,13 @@ export default function Home() {
       // Build element description
       const tag = target.tagName.toLowerCase();
       const id = target.id ? `#${target.id}` : '';
-      const classes = target.className && typeof target.className === 'string' 
-        ? `.${target.className.split(' ').slice(0, 2).join('.')}` 
+      const classes = target.className && typeof target.className === 'string'
+        ? `.${target.className.split(' ').slice(0, 2).join('.')}`
         : '';
       const text = target.textContent?.slice(0, 30).trim() || '';
-      
+
       const elementInfo = `${tag}${id}${classes}${text ? ` "${text}"` : ''}`;
-      
+
       trackEvent('click', elementInfo);
     };
 
@@ -275,8 +276,8 @@ export default function Home() {
               <span className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent" />
 
               <Sparkles className={`w-4 h-4 relative z-10 transition-all duration-300 ${isShuffling ? 'animate-pulse' : 'group-hover:rotate-12 group-hover:scale-110'}`} />
-              <span className="relative z-10">{isShuffling ? 'Finding your idea...' : 'Try a Random Idea'}</span>
-              <ArrowRight className={`w-4 h-4 relative z-10 transition-all duration-300 ${isShuffling ? 'opacity-0' : 'group-hover:translate-x-1'}`} />
+              <span className="relative z-10">{isShuffling ? 'Finding your idea...' : 'Click to see a random idea'}</span>
+              <ArrowUp className={`w-4 h-4 relative z-10 transition-all duration-300 ${isShuffling ? 'opacity-0' : 'group-hover:-translate-y-1'}`} />
             </button>
           </motion.div>
 
