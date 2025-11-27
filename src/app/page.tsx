@@ -130,7 +130,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="text-center text-xs text-zinc-600 mt-auto relative z-10">
-        <p>© 2024 Valid8. All rights reserved. <span className="text-zinc-700">v2</span></p>
+        <p>© 2024 Valid8. All rights reserved. <span className="text-zinc-700">v3</span></p>
       </footer>
 
       {/* Waitlist Modal */}
